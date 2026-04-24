@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>NEON SMASH - High Quality</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="ui-container">
+        <h1>NEON SMASH</h1>
+        <input type="text" id="roomInput" placeholder="방 이름 입력 (ex: pro1)">
+        <div class="btn-group">
+            <button id="btn-host" class="cyan-btn">CREATE (HOST)</button>
+            <button id="btn-guest" class="magenta-btn">JOIN (GUEST)</button>
+        </div>
+        <div id="status">대기 중...</div>
+    </div>
+
+    <div id="score-board" style="display: none;">
+        <span id="score1" class="cyan-text">0</span>
+        <span class="vs"> : </span>
+        <span id="score2" class="magenta-text">0</span>
+    </div>
+
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+
+    <script src="game.js"></script>
+</body>
+</html>
