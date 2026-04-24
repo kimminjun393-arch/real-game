@@ -4,11 +4,11 @@ const ctx = canvas.getContext("2d");
 let client, room, isHost, gameActive = false;
 let shakeTime = 0; 
 
-// 물리 및 상태 객체
+// 물리 및 상태 객체 (기본 속도 4로 낮추고 baseSpeed 기억)
 const paddleSpeed = 9;
 const p1 = { x: 30, y: 250, w: 15, h: 100, score: 0, color: "#0ff" }; 
 const p2 = { x: 955, y: 250, w: 15, h: 100, score: 0, color: "#f0f" }; 
-const ball = { x: 500, y: 300, r: 12, dx: 5, dy: 5, speed: 5, color: "#fff" };; 
+const ball = { x: 500, y: 300, r: 12, dx: 4, dy: 4, baseSpeed: 4, color: "#fff" }; 
 
 let particles = [];
 let trails = [];
@@ -31,20 +31,18 @@ btnHost.style.opacity = "0.5"; btnGuest.style.opacity = "0.5";
 btnHost.disabled = true; btnGuest.disabled = true;
 
 // ==========================================
-// 핵심: 페이지 열리자마자 백그라운드에서 몰래 서버 연결!
+// 백그라운드 서버 사전 연결
 // ==========================================
 statusEl.innerText = "서버망 사전 구축 중... 📡";
-client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt'); // 속도가 좀 더 빠른 다른 서버로 교체
+client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt'); 
 
 client.on('connect', () => {
-    // 연결이 끝나면 버튼 활성화
     statusEl.innerText = "서버 연결 완료! 바로 접속 가능 🟢";
     statusEl.style.color = "#0f0";
     btnHost.style.opacity = "1"; btnGuest.style.opacity = "1";
     btnHost.disabled = false; btnGuest.disabled = false;
 });
 
-// 메시지 수신 처리 (미리 등록해 둠)
 client.on('message', (topic, message) => {
     const data = JSON.parse(message.toString());
     
@@ -81,7 +79,6 @@ function createParticles(x, y, color) {
 
 function screenShake() { shakeTime = 12; }
 
-// 게임 시작 (버튼 누르면 이제 0.1초 만에 넘어감)
 function startGame(hostRole) {
     const roomName = document.getElementById("roomInput").value.trim();
     if (!roomName) return alert("방 이름을 입력하세요!");
@@ -89,7 +86,6 @@ function startGame(hostRole) {
     isHost = hostRole;
     room = "hq-neon-smash/" + roomName;
     
-    // 이미 연결된 서버에 방(Topic) 이름만 구독!
     client.subscribe(room + '/host');
     client.subscribe(room + '/guest');
     
@@ -110,10 +106,11 @@ function startGame(hostRole) {
     }, 1000/20);
 }
 
+// 득점 시 기본 속도로 완벽 리셋
 function resetBall() {
     ball.x = canvas.width / 2; ball.y = canvas.height / 2;
-    ball.dx = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
-    ball.dy = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+    ball.dx = (Math.random() > 0.5 ? 1 : -1) * ball.baseSpeed;
+    ball.dy = (Math.random() > 0.5 ? 1 : -1) * ball.baseSpeed;
 }
 
 function updatePhysics() {
@@ -123,13 +120,18 @@ function updatePhysics() {
         ball.dy *= -1; createParticles(ball.x, ball.y, "#ffeb3b");
     }
 
+    // 패들에 닿을 때마다 5%씩 곱연산으로 가속!
     if (ball.x - ball.r < p1.x + p1.w && ball.y > p1.y && ball.y < p1.y + p1.h) {
-        ball.dx = Math.abs(ball.dx) + 0.4; ball.x = p1.x + p1.w + ball.r; 
+        ball.dx = Math.abs(ball.dx) * 1.05; 
+        ball.dy *= 1.05;
+        ball.x = p1.x + p1.w + ball.r; 
         createParticles(ball.x, ball.y, p1.color); screenShake();
     }
 
     if (ball.x + ball.r > p2.x && ball.y > p2.y && ball.y < p2.y + p2.h) {
-        ball.dx = -Math.abs(ball.dx) - 0.4; ball.x = p2.x - ball.r;
+        ball.dx = -Math.abs(ball.dx) * 1.05; 
+        ball.dy *= 1.05;
+        ball.x = p2.x - ball.r;
         createParticles(ball.x, ball.y, p2.color); screenShake();
     }
 
