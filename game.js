@@ -8,7 +8,7 @@ let shakeTime = 0;
 const paddleSpeed = 9;
 const p1 = { x: 30, y: 250, w: 15, h: 100, score: 0, color: "#0ff" }; 
 const p2 = { x: 955, y: 250, w: 15, h: 100, score: 0, color: "#f0f" }; 
-const ball = { x: 500, y: 300, r: 12, dx: 4, dy: 4, baseSpeed: 4, color: "#fff" }; 
+const ball = { x: 500, y: 300, r: 12, dx: 6, dy: 6, baseSpeed: 4, color: "#fff" }; 
 
 let particles = [];
 let trails = [];
